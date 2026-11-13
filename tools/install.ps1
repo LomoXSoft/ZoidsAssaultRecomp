@@ -1210,7 +1210,7 @@ try {
   $GAME = Join-Path $Root 'game'
   New-Item -ItemType Directory -Force -Path $GAME | Out-Null
   $built = @(Get-ChildItem -LiteralPath $out -File | Where-Object {
-    $_.Name -notmatch '\.(stock|pdb|ilk|lib|exp|ninja|cmake|log)$' -and $_.Name -notmatch '^(CMakeCache\.txt|\.ninja_.*|compile_commands\.json)$'
+    $_.Name -notmatch '\.(stock|pdb|ilk|lib|exp|ninja|cmake|log|cfg|ico)$' -and $_.Name -notmatch '^(CMakeCache\.txt|\.ninja_.*|compile_commands\.json)$'
   })
   if ($Update) {
     Test-GameRunning
