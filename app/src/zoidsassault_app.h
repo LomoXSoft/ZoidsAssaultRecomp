@@ -11,6 +11,7 @@
 #include <rex/logging/types.h>
 #include <rex/rex_app.h>
 
+#include "frame_stats.h"
 #include "game_icon.h"
 #include "launcher.h"
 
@@ -38,6 +39,7 @@ class ZoidsAssaultApp : public rex::ReXApp {
   void OnPostLoadXexImage() override { zoids::CaptureGameIcon(); }
   void OnCreateDialogs(rex::ui::ImGuiDrawer* drawer) override {
     (void)drawer;
+    SetGuestFrameStats(zoids::GuestFrameStats);  // F3 overlay
     zoids::ApplyGameIcon();
   }
 
