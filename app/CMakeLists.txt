@@ -19,6 +19,7 @@ set(ZOIDSASSAULT_SOURCES
     src/frame_stats.cpp
     src/game_icon.cpp
     src/save_diag.cpp
+    src/research.cpp
 )
 
 # Single version source: app/VERSION (bump per release).

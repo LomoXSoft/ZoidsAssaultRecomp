@@ -14,6 +14,7 @@
 #include "frame_stats.h"
 #include "game_icon.h"
 #include "launcher.h"
+#include "research.h"
 
 class ZoidsAssaultApp : public rex::ReXApp {
  public:
@@ -36,7 +37,10 @@ class ZoidsAssaultApp : public rex::ReXApp {
     zoids::ApplyGameIcon();
   }
   // The game's own icon, read from the loaded default.xex (game_icon.cpp).
-  void OnPostLoadXexImage() override { zoids::CaptureGameIcon(); }
+  void OnPostLoadXexImage() override {
+    zoids::ScanFrameConstants();  // research flag only
+    zoids::CaptureGameIcon();   // quits here with --zoids_write_icon
+  }
   void OnCreateDialogs(rex::ui::ImGuiDrawer* drawer) override {
     (void)drawer;
     SetGuestFrameStats(zoids::GuestFrameStats);  // F3 overlay
