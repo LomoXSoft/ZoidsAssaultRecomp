@@ -11,3 +11,9 @@ out/
 *.log
 *.cfg
 __pycache__/
+
+# Setup build outputs (tools\build_setup.bat)
+tools/zoidssetup.ico
+tools/zoidssetup.res
+tools/zoidssetup_header.inc
+tools/zoidssetup-v*.exe

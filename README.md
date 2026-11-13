@@ -5,15 +5,61 @@ USA, title ID 415407D1) to native Windows x64 using
 [ReXGlue](https://github.com/rexglue/rexglue-sdk).
 
 **This repository contains no game files.** You need your own original disc
-(or an ISO you dumped from it). No binaries are released: the executable
+(or an ISO you dumped from it). The game executable is not released: it
 contains code translated from the game, so everyone builds it from their own copy.
+The only program attached to a release is `zoidssetup-v0.0.2.exe`, the setup installer.
+
+## Quick start
+
+### Prerequisites
+- Windows 10 or 11 (64-bit) and a graphics card with Direct3D 12 (current drivers).
+- **Your own** Zoids Assault disc (USA): an ISO or a folder you already
+  extracted that contains `default.xex`. See [Getting your game files](#getting-your-game-files).
+- About 15 GB of free disk space and an internet connection (the build tools are downloaded).
+- A controller (tested: Xbox Series controller).
+
+### Install
+1. Download **[`zoidssetup-v0.0.2.exe`](https://github.com/LomoXSoft/ZoidsAssaultRecomp/releases/download/v0.0.2/zoidssetup-v0.0.2.exe)**
+   from the [releases page](https://github.com/LomoXSoft/ZoidsAssaultRecomp/releases).
+   That file is the setup program, not the game. It builds the game on your PC from your disc.
+2. Run `zoidssetup-v0.0.2.exe`. Choose the language (English only for now, like the game), then **Install**.
+3. Choose a folder, then your ISO or the extracted game folder (`default.xex` must be inside it).
+4. Accept the Microsoft Visual Studio Build Tools license (the box starts unchecked).
+   Shortcuts are optional. You can keep the downloaded tools or delete them when setup
+   finishes. Deleting them does not remove `game`, the extracted game, the logs, your
+   ISO, or your saves.
+5. The setup downloads a portable toolchain (Git, CMake, Ninja, Python, LLVM/Clang,
+   the Microsoft C++ compiler and Windows SDK, the ReXGlue SDK), each checked against
+   a pinned SHA-256, extracts your disc and builds the game. HDD installation can take
+   a long time; SSD/NVMe recommended.
+6. On success the window says **Installation finished** and shows **Play**. **Play**
+   starts `game\Play.bat` in that folder, only when you click it. A shortcut, if you
+   asked for one, also starts that `Play.bat`.
+
+Nothing is installed system-wide and no admin rights are needed. To uninstall,
+delete the install folder and the shortcuts. Saves are not in that folder: they are in
+`%USERPROFILE%\Documents\zoidsassault`.
+
+### Update
+Run a newer `zoidssetup-v*.exe`, choose **Update**, and select the existing installation
+folder (the one that contains `game\Play.bat`). Close the game first. The extracted
+game, the tools and your saves are reused; the program files are rebuilt and replaced
+only after that build succeeds.
+
+### If something goes wrong
+- If the window says **Installation did not finish**, read the details and
+  `install.log` in the install folder, then run the setup again: finished steps are skipped.
+- The game log is `zoids.log` in the install folder. If the game closes on its own,
+  `game\crash_diag.log` has the place it stopped.
+- Open an issue with what happened and the logs. **Never attach game files** (ISO,
+  extracted files).
 
 ## Contents
 - [What it is](#what-it-is)
 - [Status and limitations](#status-and-limitations)
 - [Requirements](#requirements)
 - [Getting your game files](#getting-your-game-files)
-- [Building](#building)
+- [Building from source](#building-from-source)
 - [Playing](#playing)
 - [Repository layout](#repository-layout)
 - [Plans](#plans)
@@ -27,7 +73,7 @@ Xenia). This repository holds only the project configuration (function
 boundaries, setjmp/longjmp addresses), a few per-game fixes and build scripts.
 
 ## Status and limitations
-Preview (0.0.1). Tested on one PC (Windows 11, AMD Radeon RX 9060 XT).
+Preview (0.0.2). Tested on one PC (Windows 11, AMD Radeon RX 9060 XT).
 - Boots, plays the intro and story cutscenes with sound, menus and gameplay.
 - Played with an Xbox Series controller from a new game to the end of the
   first mission.
@@ -64,8 +110,8 @@ Preview (0.0.1). Tested on one PC (Windows 11, AMD Radeon RX 9060 XT).
 
 Never share these files or anything generated from them.
 
-## Building
-Folder layout (`<root>` = e.g. `C:\zoids`):
+## Building from source
+Without the setup (for development). Folder layout (`<root>` = e.g. `C:\zoids`):
 
     <root>\ZoidsAssaultRecomp   this repository
     <root>\sdk\win-amd64        ReXGlue SDK 0.10.1 (bin\rexglue.exe inside)
@@ -102,12 +148,14 @@ stopped; please attach it and `zoids.log` to an issue.
 ## Repository layout
 - `app/` – ReXGlue project: manifest (function boundaries, setjmp/longjmp),
   per-game fixes in `src/hooks.cpp`, crash logger in `src/crash_diag.cpp`.
-- `tools/` – build/run scripts and `xiso_extract.py`.
+- `tools/` – build/run scripts, `xiso_extract.py`, and the setup: `zoidssetup.cpp`
+  (window), `install.ps1` (the steps it runs), `build_setup.bat` (builds the setup exe).
+- `tools/artwork/` – Lomorsin pixel art for the setup window and shortcut icon (not game art).
+- `checks/` – checks for the setup logic and packaging.
 
 ## Plans
 - Play through the remaining missions and fix what breaks.
 - A launcher with resolution, window mode and frame-rate options.
-- A one-click installer, as in AfroSamuraiRecomp.
 
 ## License and legal notice
 The code in this repository is licensed under the **GNU GPL v3.0** (see

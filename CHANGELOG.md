@@ -2,6 +2,19 @@
 
 Newest first. Versions are in `app/VERSION`.
 
+## 0.0.2 – one-click setup
+- New `zoidssetup-v0.0.2.exe`: a graphical installer in English (the game's
+  only language) that downloads a portable toolchain with pinned SHA-256 checksums,
+  extracts your USA disc, builds the game and creates `game\Play.bat` and
+  optional shortcuts. **Update** rebuilds an existing installation and keeps the
+  game files, tools and saves. Same design as the AfroSamuraiRecomp setup.
+- Pinned toolchain: LLVM/Clang 20.1.8, MSVC 14.51 with Windows SDK 28000, CMake,
+  Ninja, MinGit, embeddable Python 3.12, ReXGlue SDK 0.10.1.
+- Setup window and shortcut art: a Lomorsin seal zoid.
+- `build_win.bat`: portable tools take priority, the C runtime is copied next to
+  rexglue for code generation, and a CMake cache that stored `RC=0` is cleared.
+- `checks/`: setup logic, packaging and update checks.
+
 ## 0.0.1 – first public preview (source only)
 - Native Windows x64 build with ReXGlue SDK 0.10.1 and the D3D12 GPU plugin.
 - Boots, plays cutscenes with sound, menus and gameplay; the first mission

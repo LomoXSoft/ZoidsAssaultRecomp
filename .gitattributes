@@ -7,3 +7,8 @@
 # rexglue codegen rewrites this file with LF. A CRLF copy would count as a
 # changed input and force a full codegen on every build.
 app/zoidsassault_manifest.toml text eol=lf
+*.png binary
+*.ico binary
+*.webp binary
+# Same for the CMake include that codegen rewrites.
+app/generated/rexglue.cmake text eol=lf
