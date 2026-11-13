@@ -1,7 +1,7 @@
 # Setup artwork
 
-Lomorsin pixel art, used by the setup program and the game shortcut only. It is
-not game art.
+Lomorsin pixel art, used by the setup program only (the game and its shortcut use
+the game's own icon, read from your disc). It is not game art.
 
 `lomorsin-zoids/`:
 

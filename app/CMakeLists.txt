@@ -16,13 +16,9 @@ set(ZOIDSASSAULT_SOURCES
     src/hooks.cpp
     src/crash_diag.cpp
     src/launcher.cpp
+    src/frame_stats.cpp
+    src/game_icon.cpp
 )
-
-# Exe icon: the Lomorsin seal zoid from the setup artwork (not game art).
-if(WIN32)
-    enable_language(RC)
-    list(APPEND ZOIDSASSAULT_SOURCES src/zoids_icon.rc)
-endif()
 
 # Single version source: app/VERSION (bump per release).
 file(STRINGS VERSION ZOIDS_VERSION LIMIT_COUNT 1)

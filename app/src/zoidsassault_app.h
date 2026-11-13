@@ -11,6 +11,7 @@
 #include <rex/logging/types.h>
 #include <rex/rex_app.h>
 
+#include "game_icon.h"
 #include "launcher.h"
 
 class ZoidsAssaultApp : public rex::ReXApp {
@@ -29,7 +30,16 @@ class ZoidsAssaultApp : public rex::ReXApp {
     zoids::ApplyLauncherSettings();
   }
   // The GPU plugin's cvars exist only now: log what the launcher's choices became.
-  void OnPostSetup() override { zoids::LogDisplaySettings(); }
+  void OnPostSetup() override {
+    zoids::LogDisplaySettings();
+    zoids::ApplyGameIcon();
+  }
+  // The game's own icon, read from the loaded default.xex (game_icon.cpp).
+  void OnPostLoadXexImage() override { zoids::CaptureGameIcon(); }
+  void OnCreateDialogs(rex::ui::ImGuiDrawer* drawer) override {
+    (void)drawer;
+    zoids::ApplyGameIcon();
+  }
 
   // A setup install keeps the disc files in <root>\gamedata and the log in
   // <root>\zoids.log, beside <root>\game\zoidsassault.exe. Play.bat passes both;

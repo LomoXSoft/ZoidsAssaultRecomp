@@ -159,7 +159,6 @@ bool ShowLauncher(Options& opt, bool& ask) {
   wc.hInstance = inst;
   wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
   wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
-  wc.hIcon = LoadIconW(inst, MAKEINTRESOURCEW(1));
   wc.lpszClassName = L"ZoidsLauncher";
   RegisterClassW(&wc);
   const double sc = GetDpiForSystem() / 96.0;
@@ -247,8 +246,11 @@ void ApplyLauncherSettings() {
   }
   // A new version may bring new options: show the launcher once, keeping the tick.
   bool show = !have_config || ask || seen_version != ZOIDS_VERSION || REXCVAR_GET(launcher);
+  // The setup runs the game once with --zoids_write_icon to save the icon: no window then.
+  const bool icon_only = rex::cvar::GetFlagByName("zoids_write_icon") == "true";
+  if (icon_only) show = false;
 #ifdef _WIN32
-  if (GetAsyncKeyState(VK_SHIFT) & 0x8000) show = true;
+  if (!icon_only && (GetAsyncKeyState(VK_SHIFT) & 0x8000)) show = true;
   if (show) {
     if (!ShowLauncher(opt, ask)) {
       REXLOG_INFO("zoids launcher: closed, not starting the game");

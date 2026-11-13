@@ -1263,9 +1263,16 @@ try {
       Emit-Step 'install' -1 $copyI $built.Count 'copy'
     }
   }
-  # Shortcut icon: the setup's Lomorsin seal zoid (not game art).
-  $ico = Join-Path $REPO 'tools\artwork\lomorsin-zoids\lomorsin_zoids.ico'
-  if (Test-Path -LiteralPath $ico) { Copy-Item -LiteralPath $ico (Join-Path $GAME 'zoids_icon.ico') -Force }
+  # Shortcut icon: the game's own title image, read from your default.xex by the
+  # game itself (--zoids_write_icon writes game\zoids_icon.ico and quits at once).
+  # It stays on this PC. Without it the shortcuts keep the default icon.
+  try {
+    $iconArgs = @("--game_data_root=`"$(Join-Path $Root 'gamedata')`"", "--log_file=`"$(Join-Path $Root 'zoids_icon.log')`"", '--zoids_write_icon=true')
+    $ip = Start-Process -FilePath (Join-Path $GAME 'zoidsassault.exe') -WorkingDirectory $GAME -PassThru -WindowStyle Hidden -ArgumentList $iconArgs
+    if (-not $ip.WaitForExit(60000)) { $ip.Kill(); Say '    game icon: timed out' }
+    elseif (Test-Path -LiteralPath (Join-Path $GAME 'zoids_icon.ico')) { Say '    game icon: game\zoids_icon.ico' }
+    else { Say '    game icon: not found in default.xex' }
+  } catch { Say "    game icon: skipped ($($_.Exception.Message))" }
   $playBat = Join-Path $GAME 'Play.bat'
   # start returns at once; the window stays only if start fails.
   # A bat the user edited is left alone.

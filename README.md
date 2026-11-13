@@ -150,7 +150,8 @@ stopped; please attach it and `zoids.log` to an issue.
   per-game fixes in `src/hooks.cpp`, crash logger in `src/crash_diag.cpp`.
 - `tools/` – build/run scripts, `xiso_extract.py`, and the setup: `zoidssetup.cpp`
   (window), `install.ps1` (the steps it runs), `build_setup.bat` (builds the setup exe).
-- `tools/artwork/` – Lomorsin pixel art for the setup window and shortcut icon (not game art).
+- `tools/artwork/` – Lomorsin pixel art for the setup window (not game art). The game window and
+  shortcut use the game's own icon, read from your `default.xex` when it runs.
 - `checks/` – checks for the setup logic and packaging.
 
 ## Plans
