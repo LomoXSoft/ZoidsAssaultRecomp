@@ -1,0 +1,13 @@
+# Game-derived files: never commit
+*.xex
+*.pe
+*.iso
+*.zip
+assets/
+app/generated/default/
+
+# Build output, logs, settings
+out/
+*.log
+*.cfg
+__pycache__/

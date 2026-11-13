@@ -1,0 +1,9 @@
+* text=auto
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.py text eol=lf
+*.sh text eol=lf
+# rexglue codegen rewrites this file with LF. A CRLF copy would count as a
+# changed input and force a full codegen on every build.
+app/zoidsassault_manifest.toml text eol=lf
