@@ -268,7 +268,9 @@ void ApplyLauncherSettings() {
   if (!Explicit("fullscreen")) SetCvar("fullscreen", opt.display == 1 ? "false" : "true");
   if (!Explicit("fullscreen_exclusive")) SetCvar("fullscreen_exclusive", opt.display == 2 ? "true" : "false");
   if (!Explicit("resolution_scale") && opt.scale > 1) SetCvar("resolution_scale", std::to_string(opt.scale));
-  if (!Explicit("vsync") && !opt.vsync) SetCvar("vsync", "false");
+  // Experimental 60 FPS presents every vblank: the game would otherwise wait two.
+  const bool sixty = rex::cvar::GetFlagByName("zoids_60") == "true";
+  if (!Explicit("vsync") && (!opt.vsync || sixty)) SetCvar("vsync", "false");
 }
 
 void LogDisplaySettings() {
