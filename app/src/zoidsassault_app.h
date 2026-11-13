@@ -4,7 +4,14 @@
 
 #pragma once
 
+#include <filesystem>
+#include <system_error>
+
+#include <rex/filesystem.h>
+#include <rex/logging/types.h>
 #include <rex/rex_app.h>
+
+#include "launcher.h"
 
 class ZoidsAssaultApp : public rex::ReXApp {
  public:
@@ -16,16 +23,33 @@ class ZoidsAssaultApp : public rex::ReXApp {
         PPCImageConfig));
   }
 
-  // Override virtual hooks for customization:
-  // void OnPostInitLogging() override {}
-  // void OnPreSetup(rex::RuntimeConfig& config) override {}
-  // void OnLoadXexImage(std::string& xex_image) override {}
-  // void OnPostLoadXexImage() override {}
-  // void OnPostSetup() override {}
-  // void OnCreateDialogs(rex::ui::ImGuiDrawer* drawer) override {}
-  // std::unique_ptr<rex::ui::ImGuiDialog> CreateAchievementsOverlay() override;
-  // std::unique_ptr<rex::ui::AchievementNotificationDialog>
-  // CreateAchievementNotificationDialog() override;
-  // void OnShutdown() override {}
-  // void OnConfigurePaths(rex::PathConfig& paths) override {}
+  // Launcher (display settings) before the runtime and the GPU plugin start.
+  void OnPreSetup(rex::RuntimeConfig& config) override {
+    (void)config;
+    zoids::ApplyLauncherSettings();
+  }
+  // The GPU plugin's cvars exist only now: log what the launcher's choices became.
+  void OnPostSetup() override { zoids::LogDisplaySettings(); }
+
+  // A setup install keeps the disc files in <root>\gamedata and the log in
+  // <root>\zoids.log, beside <root>\game\zoidsassault.exe. Play.bat passes both;
+  // without them (a shortcut to the exe) use the same places.
+  // --game_data_root and --log_file still win.
+  void OnConfigurePaths(rex::PathConfig& paths) override {
+    if (paths.game_data_root.empty()) {
+      const auto data = SetupRoot() / "gamedata";
+      std::error_code ec;
+      if (std::filesystem::is_regular_file(data / "default.xex", ec)) paths.game_data_root = data;
+    }
+  }
+  void OnConfigureLogging(rex::LogConfig& config) override {
+    std::error_code ec;
+    if (config.log_file.empty() && std::filesystem::is_directory(SetupRoot() / "gamedata", ec))
+      config.log_file = SetupRoot() / "zoids.log";
+  }
+
+ private:
+  static std::filesystem::path SetupRoot() {
+    return rex::filesystem::GetExecutableFolder().parent_path();
+  }
 };
