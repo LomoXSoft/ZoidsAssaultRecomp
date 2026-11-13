@@ -103,7 +103,12 @@ extern "C" REX_FUNC(sub_822934D0) {
   REX_FUNC_PROLOGUE();
   const uint32_t device = ctx.r3.u32;
   __imp__sub_822934D0(ctx, base);
-  if (On()) REXLOG_INFO("zoids save: XamContentGetDeviceState(device={}) -> {:08X}", device, ctx.r3.u32);
+  static uint64_t last = ~0ull;  // polled every frame in some menus: log changes only
+  const uint64_t now = (uint64_t(device) << 32) | ctx.r3.u32;
+  if (On() && now != last) {
+    last = now;
+    REXLOG_INFO("zoids save: XamContentGetDeviceState(device={}) -> {:08X}", device, ctx.r3.u32);
+  }
 }
 
 extern "C" REX_FUNC(sub_822934D8) {
