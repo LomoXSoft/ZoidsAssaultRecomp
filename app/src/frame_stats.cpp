@@ -12,7 +12,9 @@
 
 #include <chrono>
 #include <mutex>
+#include <string>
 #include <thread>
+#include <vector>
 
 #include <rex/cvar.h>
 #include <rex/logging.h>
@@ -79,10 +81,36 @@ void Count() {
     }
   }
 }
+// Research: the guest call chain at the swap. Each frame stores the caller's
+// return address at -8 from its back-chain pointer (stw r12,-8(r1)). Each
+// distinct chain is logged once.
+void LogSwapStack(const PPCContext& ctx, uint8_t* base) {
+  static std::mutex mu;
+  static std::vector<std::string> seen;
+  std::string chain = fmt::format("{:08X}", uint32_t(ctx.lr));
+  uint32_t sp = ctx.r1.u32;
+  for (int i = 0; i < 16 && sp >= 0x70000000 && sp < 0x80000000; ++i) {
+    const uint32_t back = REX_LOAD_U32(sp);
+    if (back <= sp || back >= 0x80000000) break;
+    const uint32_t lr = REX_LOAD_U32(back - 8);
+    if (lr < 0x82000000 || lr >= 0x82500000) break;
+    chain += fmt::format(" <- {:08X}", lr);
+    sp = back;
+  }
+  std::lock_guard lk(mu);
+  for (const auto& s : seen)
+    if (s == chain) return;
+  if (seen.size() > 64) return;
+  seen.push_back(chain);
+  REXLOG_INFO("zoids swap stack #{} (frame {}): {}", seen.size(), g_frames, chain);
+}
 }  // namespace
+
+REXCVAR_DEFINE_BOOL(zoids_swap_stack, false, "Zoids", "Research: log each distinct guest call chain into the swap");
 
 extern "C" REX_FUNC(sub_821092E0) {
   REX_FUNC_PROLOGUE();
+  if (REXCVAR_GET(zoids_swap_stack)) LogSwapStack(ctx, base);
   if (const int cap = EffectiveCap(); cap > 0) Pace(cap);
   Count();
   __imp__sub_821092E0(ctx, base);
