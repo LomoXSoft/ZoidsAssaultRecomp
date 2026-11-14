@@ -246,6 +246,10 @@ void ApplyLauncherSettings() {
   }
   // A new version may bring new options: show the launcher once, keeping the tick.
   bool show = !have_config || ask || seen_version != ZOIDS_VERSION || REXCVAR_GET(launcher);
+  // RecompLauncher shows these settings on the game's page and edits this file:
+  // only Shift or --launcher open this window then.
+  if (const char* rl = std::getenv("RECOMPLAUNCHER"); rl && std::string(rl) == "1")
+    show = REXCVAR_GET(launcher);
   // The setup runs the game once with --zoids_write_icon to save the icon: no window then.
   const bool icon_only = rex::cvar::GetFlagByName("zoids_write_icon") == "true";
   if (icon_only) show = false;

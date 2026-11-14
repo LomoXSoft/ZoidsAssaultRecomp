@@ -51,6 +51,8 @@ $script:DLSHARE = 0.9   # share of a download+extract step spent downloading
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $ISO_SHA1 = 'BEE0071B6C14096F42E16991AF75977999F268DD'
+# The same USA disc as dumped by Redump (redump.org/disc/90616).
+$ISO_SHA1_REDUMP = '3DCEC31A416CC04ECCEBD8A466EE4F99A02C9BDD'
 # default.xex of the USA disc (title 415407D1).
 $XEX_SHA1 = 'e96732cbf8eb2497473021b4f5db27d5e6cf6093'
 # The graphical setup passes -LocalTree with its embedded source and checks this.
@@ -957,7 +959,7 @@ try {
       if (Test-Path -LiteralPath $notePath) { Remove-Item -LiteralPath $notePath -Force }
       Say (T 'iso_check')
       $h = (Get-FileHash -LiteralPath $isoFull -Algorithm SHA1).Hash
-      if ($h -eq $ISO_SHA1) {
+      if ($h -eq $ISO_SHA1 -or $h -eq $ISO_SHA1_REDUMP) {
         Say (T 'iso_ok') Green
         Mark 'iso-hash'
         if (Test-Path -LiteralPath $notePath) { Remove-Item -LiteralPath $notePath -Force }

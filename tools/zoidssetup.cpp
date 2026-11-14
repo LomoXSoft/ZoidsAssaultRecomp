@@ -12,6 +12,8 @@ static const char kArtCredit[] = "Lomorsin Zoids header 1200x240";
 #include <shlobj.h>
 #include <tlhelp32.h>
 
+#include <algorithm>
+#include <cstdio>
 #include <cstring>
 #include <cwchar>
 #include <string>
@@ -1678,6 +1680,277 @@ void SelfTest(const std::wstring& out_path) {
   fclose(f);
 }
 
+// RecompLauncher (recomplauncher.json in the release zip). Only these two
+// arguments change anything; without them this is the setup window as before.
+//   --prepare --game <iso or folder> [--accept-msvc-license]
+//       Installs into ZoidsAssaultRecomp next to this exe without a window,
+//       printing "progress <0..1> <text>" lines. Exit code: the installer's.
+//   --play [game arguments...]
+//       Starts the installed game and waits for it. If this setup is a newer
+//       version than the installed build (the launcher updated the release),
+//       the game is rebuilt first, with a small status window.
+std::wstring ExeDir() {
+  wchar_t path[MAX_PATH];
+  const DWORD n = GetModuleFileNameW(nullptr, path, MAX_PATH);
+  std::wstring dir(path, n);
+  const size_t slash = dir.find_last_of(L'\\');
+  return slash == std::wstring::npos ? dir : dir.substr(0, slash);
+}
+
+std::wstring LauncherRoot() { return ExeDir() + L"\\" + zoidssetup::InstallFolderName(); }
+
+void WriteHandle(DWORD which, const std::string& text) {
+  HANDLE h = GetStdHandle(which);
+  if (!h || h == INVALID_HANDLE_VALUE) return;
+  DWORD written = 0;
+  WriteFile(h, text.data(), static_cast<DWORD>(text.size()), &written, nullptr);
+}
+
+void StdOut(const std::string& text) { WriteHandle(STD_OUTPUT_HANDLE, text); }
+
+std::string Narrow(const std::wstring& w) {
+  std::string out;
+  for (wchar_t c : w) out.push_back(c < 0x80 ? static_cast<char>(c) : '?');
+  return out;
+}
+
+// Runs install.ps1 as StartInstall does, without a window. on_line gets each
+// output line. Returns the installer's exit code.
+DWORD RunInstallerHeadless(const zoidssetup::Request& req, const std::wstring& tree,
+                           void (*on_line)(const std::wstring&)) {
+  const std::wstring cmd = zoidssetup::JoinCommandLine(zoidssetup::BuildArgv(req));
+  SECURITY_ATTRIBUTES sa{};
+  sa.nLength = sizeof sa;
+  sa.bInheritHandle = TRUE;
+  HANDLE read_pipe = nullptr, write_pipe = nullptr;
+  if (!CreatePipe(&read_pipe, &write_pipe, &sa, 0)) return 1;
+  SetHandleInformation(read_pipe, HANDLE_FLAG_INHERIT, 0);
+  STARTUPINFOW si{};
+  si.cb = sizeof si;
+  si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+  si.wShowWindow = SW_HIDE;
+  si.hStdOutput = write_pipe;
+  si.hStdError = write_pipe;
+  PROCESS_INFORMATION pi{};
+  std::vector<wchar_t> mutable_cmd(cmd.begin(), cmd.end());
+  mutable_cmd.push_back(L'\0');
+  if (!CreateProcessW(nullptr, mutable_cmd.data(), nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr,
+                      (tree + L"\\tools").c_str(), &si, &pi)) {
+    CloseHandle(read_pipe);
+    CloseHandle(write_pipe);
+    return 1;
+  }
+  CloseHandle(write_pipe);
+  CloseHandle(pi.hThread);
+  std::string pending;
+  auto lines = [&](bool tail) {
+    for (;;) {
+      const size_t cut = pending.find('\n');
+      if (cut == std::string::npos && !(tail && !pending.empty())) break;
+      const std::string one = cut == std::string::npos ? pending : pending.substr(0, cut);
+      pending.erase(0, cut == std::string::npos ? pending.size() : cut + 1);
+      std::wstring w = zoidssetup::NormalizeConsole(one);
+      while (!w.empty() && (w.back() == L'\r' || w.back() == L'\n')) w.pop_back();
+      on_line(w);
+    }
+  };
+  auto drain = [&]() {
+    DWORD avail = 0;
+    bool any = false;
+    while (PeekNamedPipe(read_pipe, nullptr, 0, nullptr, &avail, nullptr) && avail > 0) {
+      char buf[4096];
+      DWORD got = 0;
+      if (!ReadFile(read_pipe, buf, sizeof buf, &got, nullptr) || got == 0) break;
+      pending.append(buf, buf + got);
+      any = true;
+    }
+    return any;
+  };
+  for (;;) {
+    if (drain()) lines(false);
+    if (WaitForSingleObject(pi.hProcess, 50) == WAIT_OBJECT_0) {
+      drain();
+      lines(true);
+      break;
+    }
+    MSG msg;
+    while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+      TranslateMessage(&msg);
+      DispatchMessageW(&msg);
+    }
+  }
+  DWORD code = 1;
+  GetExitCodeProcess(pi.hProcess, &code);
+  CloseHandle(pi.hProcess);
+  CloseHandle(read_pipe);
+  return code;
+}
+
+// A step line as overall progress, with the step's name.
+bool StepProgress(const std::wstring& line, double& fraction, std::wstring& label) {
+  zoidssetup::StepView view;
+  if (line.rfind(L"ZOIDSTEP ", 0) != 0 || !zoidssetup::ApplyInstallerLine(line, view, kEn)) return false;
+  if (view.count <= 0) return false;
+  const double within = view.indeterminate ? 0.0 : view.bar / 100.0;
+  fraction = (std::min)(1.0, (std::max)(0.0, (view.index - 1 + within) / view.count));
+  label = view.label;
+  return true;
+}
+
+// Extracts the embedded source into a temporary folder; empty on failure.
+std::wstring ExtractForLauncher(std::wstring& error) {
+  const std::wstring temp = TempRoot();
+  const std::wstring tree = temp + L"\\source";
+  CreateDirectoryW(temp.c_str(), nullptr);
+  CreateDirectoryW(tree.c_str(), nullptr);
+  if (!ExtractPayload(tree, error)) return {};
+  if (ReadVersionFile(tree) != zoidssetup::kExpectedVersion) {
+    error = L"the embedded source is not version " + std::wstring(zoidssetup::kExpectedVersion);
+    return {};
+  }
+  return tree;
+}
+
+void RemoveTree(const std::wstring& dir) {
+  std::wstring from = dir;
+  from.push_back(L'\0');
+  SHFILEOPSTRUCTW op{};
+  op.wFunc = FO_DELETE;
+  op.pFrom = from.c_str();
+  op.fFlags = FOF_NO_UI;
+  SHFileOperationW(&op);
+}
+
+zoidssetup::Request LauncherRequest(const std::wstring& tree, const std::wstring& root) {
+  zoidssetup::Request r;
+  wchar_t windir[MAX_PATH];
+  GetWindowsDirectoryW(windir, MAX_PATH);
+  r.powershell_exe = std::wstring(windir) + L"\\System32\\WindowsPowerShell\\v1.0\\powershell.exe";
+  r.script_path = tree + L"\\tools\\install.ps1";
+  r.install_dir = root;
+  r.language = L"en";
+  r.shortcut = false;
+  r.keep_build_files = true;  // a later release is built with the same tools
+  r.local_tree = tree;
+  return r;
+}
+
+void PrepareLine(const std::wstring& line) {
+  double f = 0;
+  std::wstring label;
+  char num[32];
+  if (StepProgress(line, f, label)) {
+    snprintf(num, sizeof num, "%.3f", f);
+    StdOut(std::string("progress ") + num + " " + Narrow(label) + "\n");
+  } else if (!line.empty() && line[0] != L'[') {
+    WriteHandle(STD_ERROR_HANDLE, Narrow(line) + "\n");  // messages and errors
+  }
+}
+
+int LauncherPrepare(const std::wstring& game, bool accept_license) {
+  if (game.empty()) {
+    WriteHandle(STD_ERROR_HANDLE, "--prepare needs --game <your Zoids Assault ISO or extracted folder>\n");
+    return 2;
+  }
+  StdOut("progress 0 Unpacking the setup\n");
+  std::wstring error;
+  const std::wstring tree = ExtractForLauncher(error);
+  if (tree.empty()) {
+    WriteHandle(STD_ERROR_HANDLE, Narrow(error) + "\n");
+    RemoveTree(TempRoot());
+    return 2;
+  }
+  g_install = LauncherRoot();
+  CreateDirectoryW(g_install.c_str(), nullptr);
+  zoidssetup::Request r = LauncherRequest(tree, g_install);
+  const DWORD attr = GetFileAttributesW(game.c_str());
+  if (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY)) r.gamedata_dir = game;
+  else r.iso = game;
+  r.accept_license = accept_license;
+  r.license_recorded = FileExists(g_install + L"\\.install\\msvc.done");
+  const auto problems = zoidssetup::Validate(r);
+  if (!problems.empty()) {
+    WriteHandle(STD_ERROR_HANDLE, Narrow(problems.front()) + "\n");
+    RemoveTree(TempRoot());
+    return problems.front().find(L"license") != std::wstring::npos ? 3 : 2;
+  }
+  const DWORD code = RunInstallerHeadless(r, tree, PrepareLine);
+  if (code == 0) StdOut("progress 1 Ready to play\n");
+  RemoveTree(TempRoot());
+  return static_cast<int>(code);
+}
+
+// --play: the small window shown while a newer release is built.
+HWND g_play_label = nullptr;
+
+void PlayUpdateLine(const std::wstring& line) {
+  double f = 0;
+  std::wstring label;
+  if (!g_play_label || !StepProgress(line, f, label)) return;
+  const std::wstring text = L"Updating Zoids Assault Recomp to " + std::wstring(zoidssetup::kExpectedVersion) +
+                            L"\n\n" + label + L" (" + std::to_wstring(static_cast<int>(f * 100)) + L"%)";
+  SetWindowTextW(g_play_label, text.c_str());
+}
+
+int LauncherPlay(const std::vector<std::wstring>& game_args) {
+  const std::wstring root = LauncherRoot();
+  const std::wstring exe = root + L"\\game\\zoidsassault.exe";
+  if (!FileExists(exe)) return 10;  // not set up yet
+  if (g_payload_ok && InstalledVersion(root) != zoidssetup::kExpectedVersion) {
+    if (ZoidsassaultRunning()) return 11;
+    g_play_label = CreateWindowExW(WS_EX_TOPMOST, L"STATIC",
+                                   (L"Updating Zoids Assault Recomp to " +
+                                    std::wstring(zoidssetup::kExpectedVersion))
+                                       .c_str(),
+                                   WS_POPUP | WS_BORDER | WS_VISIBLE | SS_CENTER,
+                                   (GetSystemMetrics(SM_CXSCREEN) - 520) / 2,
+                                   (GetSystemMetrics(SM_CYSCREEN) - 120) / 2, 520, 120, nullptr, nullptr, g_inst,
+                                   nullptr);
+    if (g_play_label)
+      SendMessageW(g_play_label, WM_SETFONT, reinterpret_cast<WPARAM>(GetStockObject(DEFAULT_GUI_FONT)), TRUE);
+    std::wstring error;
+    const std::wstring tree = ExtractForLauncher(error);
+    DWORD code = 12;
+    if (!tree.empty()) {
+      g_install = root;
+      zoidssetup::Request r = LauncherRequest(tree, root);
+      r.license_recorded = true;  // the installed build was made with these tools
+      r.update = true;
+      if (zoidssetup::Validate(r).empty()) code = RunInstallerHeadless(r, tree, PlayUpdateLine);
+    }
+    RemoveTree(TempRoot());
+    if (g_play_label) DestroyWindow(g_play_label);
+    g_play_label = nullptr;
+    if (code != 0) {
+      MessageBoxW(nullptr,
+                  (L"The update to " + std::wstring(zoidssetup::kExpectedVersion) +
+                   L" did not finish. The details are in " + root + L"\\install.log.")
+                      .c_str(),
+                  L"Zoids Assault Recomp", MB_ICONWARNING);
+      return 12;
+    }
+  }
+  // The same arguments as game\Play.bat.
+  std::vector<std::wstring> argv = {exe, L"--game_data_root=" + root + L"\\gamedata", L"--gpu_plugin=xenos",
+                                    L"--log_file=" + root + L"\\zoids.log"};
+  argv.insert(argv.end(), game_args.begin(), game_args.end());
+  const std::wstring cmd = zoidssetup::JoinCommandLine(argv);
+  std::vector<wchar_t> mutable_cmd(cmd.begin(), cmd.end());
+  mutable_cmd.push_back(L'\0');
+  STARTUPINFOW si{};
+  si.cb = sizeof si;
+  PROCESS_INFORMATION pi{};
+  if (!CreateProcessW(exe.c_str(), mutable_cmd.data(), nullptr, nullptr, FALSE, 0, nullptr,
+                      (root + L"\\game").c_str(), &si, &pi))
+    return 13;
+  CloseHandle(pi.hThread);
+  WaitForSingleObject(pi.hProcess, INFINITE);
+  DWORD code = 0;
+  GetExitCodeProcess(pi.hProcess, &code);
+  CloseHandle(pi.hProcess);
+  return static_cast<int>(code);
+}
+
 }  // namespace
 
 int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int show) {
@@ -1694,7 +1967,30 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int show) {
     if (a.rfind(L"--local-tree=", 0) == 0) g_cli_tree = a.substr(13);
     if (a.rfind(L"--dump-pages=", 0) == 0) g_dump_dir = a.substr(13);
   }
+  // RecompLauncher modes (see LauncherPrepare / LauncherPlay).
+  bool prepare = false, play = false, accept_license = false;
+  std::wstring launcher_game;
+  std::vector<std::wstring> game_args;
+  for (int i = 1; argv && i < argc; ++i) {
+    const std::wstring a = argv[i];
+    if (play) game_args.push_back(a);
+    else if (a == L"--play") play = true;
+    else if (a == L"--prepare") prepare = true;
+    else if (a == L"--accept-msvc-license") accept_license = true;
+    else if (a == L"--game" && i + 1 < argc) launcher_game = argv[++i];
+  }
   if (argv) LocalFree(argv);
+  if (prepare || play) {
+    std::vector<zoidssetup::PayloadFile> payload;
+    std::string payload_error;
+    g_payload_ok = LoadOwnPayload(payload, payload_error);
+    if (play) return LauncherPlay(game_args);
+    if (!g_payload_ok) {
+      StdOut("progress 0 This setup's embedded source is damaged: " + payload_error + "\n");
+      return 2;
+    }
+    return LauncherPrepare(launcher_game, accept_license);
+  }
 
   std::vector<zoidssetup::PayloadFile> files;
   std::string error;
