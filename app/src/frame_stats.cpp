@@ -9,7 +9,6 @@
 #include "generated/default/zoidsassault_pch.h"
 
 #include "frame_stats.h"
-#include "sixty.h"
 
 #include <chrono>
 #include <mutex>
@@ -38,7 +37,6 @@ clk::time_point g_next{};
 int EffectiveCap() {
   const int cap = REXCVAR_GET(zoids_fps_cap);
   if (cap > 0) return cap;
-  if (zoids::SixtyMode()) return 60;  // experimental 60: VSync is off (launcher)
   // `vsync` belongs to the GPU plugin, so read it by name.
   static const bool vsync = !rex::cvar::GetFlagInfo("vsync") || rex::cvar::Query<bool>("vsync");
   return vsync ? 0 : 30;
