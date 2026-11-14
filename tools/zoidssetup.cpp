@@ -1708,9 +1708,12 @@ void WriteHandle(DWORD which, const std::string& text) {
 
 void StdOut(const std::string& text) { WriteHandle(STD_OUTPUT_HANDLE, text); }
 
+// UTF-8, as the launcher reads it (the step labels use dashes and dots).
 std::string Narrow(const std::wstring& w) {
-  std::string out;
-  for (wchar_t c : w) out.push_back(c < 0x80 ? static_cast<char>(c) : '?');
+  if (w.empty()) return {};
+  const int n = WideCharToMultiByte(CP_UTF8, 0, w.data(), static_cast<int>(w.size()), nullptr, 0, nullptr, nullptr);
+  std::string out(n > 0 ? n : 0, '\0');
+  if (n > 0) WideCharToMultiByte(CP_UTF8, 0, w.data(), static_cast<int>(w.size()), out.data(), n, nullptr, nullptr);
   return out;
 }
 
