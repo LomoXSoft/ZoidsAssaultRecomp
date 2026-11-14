@@ -2,8 +2,11 @@
 
 Newest first. Versions are in `app/VERSION`.
 
-## 0.0.4 – RecompLauncher support
-- `recomplauncher.json` and a `ZoidsAssaultRecomp-v0.0.4-Windows-x64.zip` release file:
+## 0.1.0 – first milestone: the game works
+- The game boots, plays its cutscenes with sound, and plays from a new game to the
+  end of the first mission with a controller; saving and loading work.
+  This release is the 0.0.4 pre-release under its milestone number.
+- `recomplauncher.json` and a `ZoidsAssaultRecomp-v0.1.0-Windows-x64.zip` release file:
   RecompLauncher checks your ISO or extracted folder (with the Redump USA dump as the
   known good copy), runs the setup without a window, shows the display, resolution and
   VSync settings on the game's page, and starts the game.

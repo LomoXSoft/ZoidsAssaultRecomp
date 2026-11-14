@@ -9,8 +9,8 @@ USA, title ID 415407D1) to native Windows x64 using
 **This repository contains no game files.** You need your own original disc
 (or an ISO you dumped from it). The game executable is not released: it
 contains code translated from the game, so everyone builds it from their own copy.
-The programs attached to a release are the setup installer, `zoidssetup-v0.0.4.exe`, and
-`ZoidsAssaultRecomp-v0.0.4-Windows-x64.zip`, the same setup packed for
+The programs attached to a release are the setup installer, `zoidssetup-v0.1.0.exe`, and
+`ZoidsAssaultRecomp-v0.1.0-Windows-x64.zip`, the same setup packed for
 [RecompLauncher](#recomplauncher).
 
 ## Quick start
@@ -23,10 +23,10 @@ The programs attached to a release are the setup installer, `zoidssetup-v0.0.4.e
 - A controller (tested: Xbox Series controller).
 
 ### Install
-1. Download **[`zoidssetup-v0.0.4.exe`](https://github.com/LomoXSoft/ZoidsAssaultRecomp/releases/download/v0.0.4/zoidssetup-v0.0.4.exe)**
+1. Download **[`zoidssetup-v0.1.0.exe`](https://github.com/LomoXSoft/ZoidsAssaultRecomp/releases/download/v0.1.0/zoidssetup-v0.1.0.exe)**
    from the [releases page](https://github.com/LomoXSoft/ZoidsAssaultRecomp/releases).
    That file is the setup program, not the game. It builds the game on your PC from your disc.
-2. Run `zoidssetup-v0.0.4.exe`. Choose the language (English only for now, like the game), then **Install**.
+2. Run `zoidssetup-v0.1.0.exe`. Choose the language (English only for now, like the game), then **Install**.
 3. Choose a folder, then your ISO or the extracted game folder (`default.xex` must be inside it).
 4. Accept the Microsoft Visual Studio Build Tools license (the box starts unchecked).
    Shortcuts are optional. You can keep the downloaded tools or delete them when setup
@@ -80,7 +80,7 @@ Xenia). This repository holds only the project configuration (function
 boundaries, setjmp/longjmp addresses), a few per-game fixes and build scripts.
 
 ## Status and limitations
-Preview (0.0.4). Tested on one PC (Windows 11, AMD Radeon RX 9060 XT).
+0.1.0, the first milestone: the game works. Tested on one PC (Windows 11, AMD Radeon RX 9060 XT).
 - Boots, plays the intro and story cutscenes with sound, menus and gameplay.
 - Played with an Xbox Series controller from a new game to the end of the
   first mission.
