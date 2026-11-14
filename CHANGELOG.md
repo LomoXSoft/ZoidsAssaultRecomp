@@ -2,6 +2,24 @@
 
 Newest first. Versions are in `app/VERSION`.
 
+## 0.0.3 – launcher and display settings
+- Launcher before the game starts (first run, after an update, Shift held, or
+  `--launcher`): borderless / window / exclusive fullscreen, internal resolution
+  1x / 2x / 3x, VSync. Saved in `zoids_settings.cfg` next to the exe.
+- VSync off no longer makes the game run too fast: it is held at its own 30 FPS.
+- **F3** shows the frame rate.
+- The game window, taskbar and shortcuts use the game's own icon, read from your
+  `default.xex` when the game runs (nothing from the game is in the repository).
+  The setup writes `game\zoids_icon.ico` after the build for the shortcuts.
+- Started without `Play.bat`, the game finds `<root>\gamedata` and writes
+  `<root>\zoids.log` like a setup install.
+- `zoids.log` records the game's save calls (`zoids save:` lines). Saves were
+  checked: after a restart **Load** lists them.
+- Setup: an update no longer copies settings or icon files from the build folder
+  into `game`.
+- 60 FPS was investigated and is not included: the game is frame-locked (see the
+  README's Plans). Research flags for that work are off by default.
+
 ## 0.0.2 – one-click setup
 - New `zoidssetup-v0.0.2.exe`: a graphical installer in English (the game's
   only language) that downloads a portable toolchain with pinned SHA-256 checksums,

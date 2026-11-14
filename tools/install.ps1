@@ -54,7 +54,7 @@ $ISO_SHA1 = 'BEE0071B6C14096F42E16991AF75977999F268DD'
 # default.xex of the USA disc (title 415407D1).
 $XEX_SHA1 = 'e96732cbf8eb2497473021b4f5db27d5e6cf6093'
 # The graphical setup passes -LocalTree with its embedded source and checks this.
-$LOCAL_TREE_VERSION = '0.0.2'
+$LOCAL_TREE_VERSION = '0.0.3'
 $NEED_GB = 15
 # Pinned downloads (official sources) with SHA-256.
 $DL = @{

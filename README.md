@@ -7,7 +7,7 @@ USA, title ID 415407D1) to native Windows x64 using
 **This repository contains no game files.** You need your own original disc
 (or an ISO you dumped from it). The game executable is not released: it
 contains code translated from the game, so everyone builds it from their own copy.
-The only program attached to a release is `zoidssetup-v0.0.2.exe`, the setup installer.
+The only program attached to a release is `zoidssetup-v0.0.3.exe`, the setup installer.
 
 ## Quick start
 
@@ -19,10 +19,10 @@ The only program attached to a release is `zoidssetup-v0.0.2.exe`, the setup ins
 - A controller (tested: Xbox Series controller).
 
 ### Install
-1. Download **[`zoidssetup-v0.0.2.exe`](https://github.com/LomoXSoft/ZoidsAssaultRecomp/releases/download/v0.0.2/zoidssetup-v0.0.2.exe)**
+1. Download **[`zoidssetup-v0.0.3.exe`](https://github.com/LomoXSoft/ZoidsAssaultRecomp/releases/download/v0.0.3/zoidssetup-v0.0.3.exe)**
    from the [releases page](https://github.com/LomoXSoft/ZoidsAssaultRecomp/releases).
    That file is the setup program, not the game. It builds the game on your PC from your disc.
-2. Run `zoidssetup-v0.0.2.exe`. Choose the language (English only for now, like the game), then **Install**.
+2. Run `zoidssetup-v0.0.3.exe`. Choose the language (English only for now, like the game), then **Install**.
 3. Choose a folder, then your ISO or the extracted game folder (`default.xex` must be inside it).
 4. Accept the Microsoft Visual Studio Build Tools license (the box starts unchecked).
    Shortcuts are optional. You can keep the downloaded tools or delete them when setup
@@ -35,6 +35,8 @@ The only program attached to a release is `zoidssetup-v0.0.2.exe`, the setup ins
 6. On success the window says **Installation finished** and shows **Play**. **Play**
    starts `game\Play.bat` in that folder, only when you click it. A shortcut, if you
    asked for one, also starts that `Play.bat`.
+7. The first start shows the launcher (display mode, internal resolution, VSync). See
+   [Launcher and options](#launcher-and-options).
 
 Nothing is installed system-wide and no admin rights are needed. To uninstall,
 delete the install folder and the shortcuts. Saves are not in that folder: they are in
@@ -61,6 +63,7 @@ only after that build succeeds.
 - [Getting your game files](#getting-your-game-files)
 - [Building from source](#building-from-source)
 - [Playing](#playing)
+- [Launcher and options](#launcher-and-options)
 - [Repository layout](#repository-layout)
 - [Plans](#plans)
 - [License and legal notice](#license-and-legal-notice)
@@ -73,13 +76,14 @@ Xenia). This repository holds only the project configuration (function
 boundaries, setjmp/longjmp addresses), a few per-game fixes and build scripts.
 
 ## Status and limitations
-Preview (0.0.2). Tested on one PC (Windows 11, AMD Radeon RX 9060 XT).
+Preview (0.0.3). Tested on one PC (Windows 11, AMD Radeon RX 9060 XT).
 - Boots, plays the intro and story cutscenes with sound, menus and gameplay.
 - Played with an Xbox Series controller from a new game to the end of the
   first mission.
-- Later missions, saving and loading have not been tested yet.
-- No launcher or settings yet: it runs at the game's original resolution and
-  frame rate.
+- Saving works, and **Load** lists the saves after the game is closed and started
+  again. Later missions have not been played through yet.
+- 30 FPS, the game's own rate. 60 FPS is not available: the game advances every
+  part of itself by a fixed step per frame (see [Plans](#plans)).
 - Only the USA disc has been tested (see below). Other versions may not work.
 - Windows x64 only for now (D3D12).
 - Expect bugs; saves and settings may change between versions.
@@ -92,7 +96,7 @@ Preview (0.0.2). Tested on one PC (Windows 11, AMD Radeon RX 9060 XT).
   - Visual Studio 2022 Build Tools (MSVC + Windows SDK) – run the build from a
     "x64 Native Tools" prompt, or put a portable MSVC in `<root>\tools\msvc`
     with `setup_x64.bat`.
-  - LLVM/Clang (`clang++`; tested with 23.1), CMake ≥ 3.25, Ninja, Git.
+  - LLVM/Clang (`clang++`; tested with 20.1 and 23.1), CMake ≥ 3.25, Ninja, Git.
   - Python 3 (only to extract the disc).
 - ReXGlue SDK **0.10.1** (prebuilt, `rexglue-sdk-0.10.1-win-amd64.zip`).
 
@@ -145,9 +149,35 @@ writes `<root>\zoids.log`. Any ReXGlue option can be added on the command line.
 If the game closes on its own, `crash_diag.log` next to the exe has the place it
 stopped; please attach it and `zoids.log` to an issue.
 
+## Launcher and options
+A small window before the game starts, shown on the first run, after each update,
+when **Shift** is held while the game starts, or with `--launcher`. **Quit** closes it
+without starting the game.
+
+- **Display**: borderless fullscreen (default), window, or exclusive fullscreen.
+- **Internal resolution**: 1x (1280x720, the original), 2x (2560x1440) or 3x
+  (3840x2160). Higher values look sharper and need a faster GPU.
+- **VSync**: on (default) or off. With VSync off the game is still held at its own
+  30 FPS; without that it would run too fast.
+- **Show this window at every start**: unticked, the launcher stays closed until
+  Shift is held.
+
+The choices are saved in `zoids_settings.cfg` next to `zoidsassault.exe`. A value
+given on the command line wins, e.g. `Play.bat --resolution_scale=2`.
+
+In the game, **F3** shows the frame rate. Options for bug reports and development:
+
+- `--zoids_fps_log=true`: the frame rate in `zoids.log` every 4 seconds.
+- `--zoids_save_log=false`: turns off the log of the game's save calls (on by
+  default; lines start with `zoids save:`).
+- `--zoids_fps_cap=N`: hold the game at N FPS.
+
 ## Repository layout
 - `app/` – ReXGlue project: manifest (function boundaries, setjmp/longjmp),
-  per-game fixes in `src/hooks.cpp`, crash logger in `src/crash_diag.cpp`.
+  per-game fixes in `src/hooks.cpp`, crash logger in `src/crash_diag.cpp`,
+  launcher in `src/launcher.cpp`, game icon in `src/game_icon.cpp`, frame cap and
+  F3 stats in `src/frame_stats.cpp`, save log in `src/save_diag.cpp`, frame-rate
+  research flags in `src/research.cpp`.
 - `tools/` – build/run scripts, `xiso_extract.py`, and the setup: `zoidssetup.cpp`
   (window), `install.ps1` (the steps it runs), `build_setup.bat` (builds the setup exe).
 - `tools/artwork/` – Lomorsin pixel art for the setup window (not game art). The game window and
@@ -156,7 +186,12 @@ stopped; please attach it and `zoids.log` to an issue.
 
 ## Plans
 - Play through the remaining missions and fix what breaks.
-- A launcher with resolution, window mode and frame-rate options.
+- 60 FPS stays out of reach for now. The main loop (`sub_82229A48`) calls each game
+  system once per frame with no time step, and the renderer flips its buffers every
+  frame, so running at 60 doubles the game's speed and showing frames twice makes
+  the screen flicker. It would need every system's per-frame steps halved. The
+  research flags `--zoids_scan_consts`, `--zoids_dump_image` (writes a local file
+  derived from your disc: keep it private) and `--zoids_swap_stack` help with that.
 
 ## License and legal notice
 The code in this repository is licensed under the **GNU GPL v3.0** (see
