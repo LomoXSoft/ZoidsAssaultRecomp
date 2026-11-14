@@ -9,6 +9,8 @@
 #include "generated/default/zoidsassault_pch.h"
 
 #include "frame_stats.h"
+#include "gpu_probe.h"
+#include "autotest.h"
 
 #include <chrono>
 #include <mutex>
@@ -113,7 +115,11 @@ extern "C" REX_FUNC(sub_821092E0) {
   if (REXCVAR_GET(zoids_swap_stack)) LogSwapStack(ctx, base);
   if (const int cap = EffectiveCap(); cap > 0) Pace(cap);
   Count();
+  zoids::GpuProbeFrameEnd();
+  zoids::AutotestFrame();
+  zoids::GpuProbeInSwap(true);
   __imp__sub_821092E0(ctx, base);
+  zoids::GpuProbeInSwap(false);
 }
 
 namespace zoids {
