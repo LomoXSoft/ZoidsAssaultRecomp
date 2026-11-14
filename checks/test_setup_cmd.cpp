@@ -678,9 +678,11 @@ int main(int argc, char** argv) {
   Expect(script_text.find("Get-FileHash -LiteralPath $isoFull -Algorithm SHA1") != std::string::npos &&
              script_text.find("$ISO_SHA1 = 'BEE0071B6C14096F42E16991AF75977999F268DD'") != std::string::npos,
          "the ISO is still one full-file SHA-1 against the same pin");
-  Expect(script_text.find("if ($h -eq $ISO_SHA1) {") != std::string::npos &&
+  // The Redump dump of the same USA disc (redump.org/disc/90616) is the second pin.
+  Expect(script_text.find("$ISO_SHA1_REDUMP = '3DCEC31A416CC04ECCEBD8A466EE4F99A02C9BDD'") != std::string::npos &&
+             script_text.find("if ($h -eq $ISO_SHA1 -or $h -eq $ISO_SHA1_REDUMP) {") != std::string::npos &&
              script_text.find("Mark 'iso-hash'") != std::string::npos,
-         "only the matching hash is marked verified");
+         "only the matching hashes are marked verified");
   Expect(script_text.find("exit 42") == std::string::npos &&
              script_text.find("ISO_UNVERIFIED_CHOICE") == std::string::npos &&
              script_text.find("YesNo (T 'cont')") == std::string::npos &&
