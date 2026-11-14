@@ -1,5 +1,7 @@
 @echo off
 rem Build tools\zoidssetup-v<app\VERSION>.exe. This is the setup program, not the game.
+rem Also builds tools\ZoidsAssaultRecomp-v<VERSION>-Windows-x64.zip for RecompLauncher:
+rem the same setup as zoidssetup.exe, with recomplauncher.json next to it.
 rem It does not upload or replace a GitHub release asset.
 rem The embedded source is "git archive HEAD": commit first, uncommitted changes are not packed.
 rem Requires clang++ with the MSVC libraries (the portable toolchain under <root>\tools,
@@ -25,3 +27,15 @@ python pack_setup_payload.py --exe "%OUT%" --repo "%SNAP%" --overlay "%SNAP%" ||
 rmdir /s /q "%SNAP%"
 for %%F in ("%OUT%") do echo built %~dp0%OUT% (%%~zF bytes)
 certutil -hashfile "%OUT%" SHA256 | findstr /v ":"
+rem RecompLauncher zip: zoidssetup.exe and recomplauncher.json at the top.
+set "ZIP=ZoidsAssaultRecomp-v%VER%-Windows-x64.zip"
+set "STAGE=%TEMP%\zoidssetup-zip-%VER%"
+if exist "%STAGE%" rmdir /s /q "%STAGE%"
+mkdir "%STAGE%" || exit /b 1
+copy /y "%OUT%" "%STAGE%\zoidssetup.exe" >nul || exit /b 1
+copy /y "%~dp0..\recomplauncher.json" "%STAGE%\recomplauncher.json" >nul || exit /b 1
+if exist "%ZIP%" del /q "%ZIP%"
+"%SystemRoot%\System32\tar.exe" -a -c -f "%ZIP%" -C "%STAGE%" zoidssetup.exe recomplauncher.json || exit /b 1
+rmdir /s /q "%STAGE%"
+for %%F in ("%ZIP%") do echo built %~dp0%ZIP% (%%~zF bytes)
+certutil -hashfile "%ZIP%" SHA256 | findstr /v ":"

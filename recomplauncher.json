@@ -1,0 +1,98 @@
+{
+  "$schema": "https://recomplauncher.com/schema/recomplauncher.json",
+  "format": 1,
+  "name": "Zoids Assault Recomp",
+  "repo": "LomoXSoft/ZoidsAssaultRecomp",
+  "game": {
+    "kind": "iso_or_folder",
+    "label": "Your copy of Zoids Assault for Xbox 360, USA release: its disc image (.iso), or its extracted folder with default.xex.",
+    "check": { "file": "default.xex", "xdvdfs": "default.xex" },
+    "dumps": [
+      { "name": "USA", "size": 7835492352, "crc32": "fa29cc46" }
+    ]
+  },
+  "prepare": {
+    "program": ["zoidssetup.exe"],
+    "args": ["--prepare", "--game", "{game}"],
+    "label": "Building the game from your disc. The first time it downloads a free compiler toolchain (about 5 GB) and takes 10 to 30 minutes.",
+    "timeout": 7200,
+    "options": [
+      {
+        "id": "msvc_license",
+        "label": "I accept the Microsoft Visual Studio Build Tools license",
+        "note": "The game is built on your PC with Microsoft's compiler and Windows SDK, downloaded from Microsoft.",
+        "args": ["--accept-msvc-license"],
+        "os": ["windows"],
+        "license": {
+          "name": "Microsoft Visual Studio Build Tools license",
+          "url": "https://go.microsoft.com/fwlink/?LinkId=2327714"
+        }
+      }
+    ]
+  },
+  "start": {
+    "program": ["zoidssetup.exe"],
+    "args": ["--play"]
+  },
+  "config": [
+    {
+      "id": "main",
+      "format": "ini",
+      "file": [{ "path": "{install}/ZoidsAssaultRecomp/game/zoids_settings.cfg" }],
+      "new": { "display": "0", "scale": "1", "vsync": "1", "ask": "0" }
+    }
+  ],
+  "settings": [
+    {
+      "id": "display",
+      "label": "Display",
+      "help": "Borderless fills your screen and lets you switch apps quickly. Exclusive gives the game the screen to itself.",
+      "choices": [
+        { "label": "Borderless", "set": { "display": "0" } },
+        { "label": "Window", "set": { "display": "1" } },
+        { "label": "Exclusive", "set": { "display": "2" } }
+      ],
+      "defaults": { "display": "0" }
+    },
+    {
+      "id": "resolution",
+      "label": "Resolution",
+      "help": "What the game draws at. 720p is the console's own. 1440p is sharp on a 1080p screen. 4K needs a fast graphics card.",
+      "choices": [
+        { "label": "720p", "set": { "scale": "1" } },
+        { "label": "1440p", "set": { "scale": "2" } },
+        { "label": "4K", "set": { "scale": "3" } }
+      ],
+      "defaults": { "scale": "1" }
+    },
+    {
+      "id": "vsync",
+      "label": "V-Sync",
+      "help": "Off can lower input lag on some screens. The game still runs at its own 30 FPS either way.",
+      "choices": [
+        { "label": "On", "set": { "vsync": "1" } },
+        { "label": "Off", "set": { "vsync": "0" } }
+      ],
+      "defaults": { "vsync": "1" }
+    }
+  ],
+  "saves": ["{documents}/zoidsassault/B13EBABEBABEBABE/415407D1"],
+  "folders": {
+    "saves": [{ "path": "{documents}/zoidsassault/B13EBABEBABEBABE/415407D1" }],
+    "logs": [{ "path": "{install}/ZoidsAssaultRecomp" }]
+  },
+  "actions": [
+    { "id": "saves", "label": "Saves", "help": "Your Zoids Assault saves.", "open": "saves" },
+    { "id": "logs", "label": "Logs", "help": "zoids.log from the last game, and install.log from the setup.", "open": "logs" }
+  ],
+  "exit_codes": {
+    "10": "The game isn't set up yet. Pick your copy of the game on its page to set it up.",
+    "11": "Zoids Assault Recomp is already running. Close it and press Play again.",
+    "12": "The update to the new version didn't finish. install.log in the game's ZoidsAssaultRecomp folder says why.",
+    "13": "The game couldn't be started. Set it up again from the game's page."
+  },
+  "looks": {
+    "allowed": false,
+    "reason": "The game is started through its setup program, which rebuilds it after updates, so looks can't be added to it yet."
+  }
+}

@@ -1,5 +1,7 @@
 # ZoidsAssaultRecomp – Zoids Assault (Xbox 360) static recompilation
 
+<a href="https://recomplauncher.com"><picture><source media="(prefers-color-scheme: dark)" srcset="https://recomplauncher.com/assets/press/launcher/badge-light.svg"><img alt="Get it on RecompLauncher" src="https://recomplauncher.com/assets/press/launcher/badge-dark.svg" height="48"></picture></a>
+
 Unofficial, work-in-progress static recompilation of **Zoids Assault** (Xbox 360,
 USA, title ID 415407D1) to native Windows x64 using
 [ReXGlue](https://github.com/rexglue/rexglue-sdk).
@@ -7,7 +9,9 @@ USA, title ID 415407D1) to native Windows x64 using
 **This repository contains no game files.** You need your own original disc
 (or an ISO you dumped from it). The game executable is not released: it
 contains code translated from the game, so everyone builds it from their own copy.
-The only program attached to a release is `zoidssetup-v0.0.3.exe`, the setup installer.
+The programs attached to a release are the setup installer, `zoidssetup-v0.0.4.exe`, and
+`ZoidsAssaultRecomp-v0.0.4-Windows-x64.zip`, the same setup packed for
+[RecompLauncher](#recomplauncher).
 
 ## Quick start
 
@@ -19,10 +23,10 @@ The only program attached to a release is `zoidssetup-v0.0.3.exe`, the setup ins
 - A controller (tested: Xbox Series controller).
 
 ### Install
-1. Download **[`zoidssetup-v0.0.3.exe`](https://github.com/LomoXSoft/ZoidsAssaultRecomp/releases/download/v0.0.3/zoidssetup-v0.0.3.exe)**
+1. Download **[`zoidssetup-v0.0.4.exe`](https://github.com/LomoXSoft/ZoidsAssaultRecomp/releases/download/v0.0.4/zoidssetup-v0.0.4.exe)**
    from the [releases page](https://github.com/LomoXSoft/ZoidsAssaultRecomp/releases).
    That file is the setup program, not the game. It builds the game on your PC from your disc.
-2. Run `zoidssetup-v0.0.3.exe`. Choose the language (English only for now, like the game), then **Install**.
+2. Run `zoidssetup-v0.0.4.exe`. Choose the language (English only for now, like the game), then **Install**.
 3. Choose a folder, then your ISO or the extracted game folder (`default.xex` must be inside it).
 4. Accept the Microsoft Visual Studio Build Tools license (the box starts unchecked).
    Shortcuts are optional. You can keep the downloaded tools or delete them when setup
@@ -76,7 +80,7 @@ Xenia). This repository holds only the project configuration (function
 boundaries, setjmp/longjmp addresses), a few per-game fixes and build scripts.
 
 ## Status and limitations
-Preview (0.0.3). Tested on one PC (Windows 11, AMD Radeon RX 9060 XT).
+Preview (0.0.4). Tested on one PC (Windows 11, AMD Radeon RX 9060 XT).
 - Boots, plays the intro and story cutscenes with sound, menus and gameplay.
 - Played with an Xbox Series controller from a new game to the end of the
   first mission.
@@ -148,6 +152,23 @@ writes `<root>\zoids.log`. Any ReXGlue option can be added on the command line.
 
 If the game closes on its own, `crash_diag.log` next to the exe has the place it
 stopped; please attach it and `zoids.log` to an issue.
+
+## RecompLauncher
+[RecompLauncher](https://recomplauncher.com) can install and update this recomp for you.
+It downloads `ZoidsAssaultRecomp-v<version>-Windows-x64.zip` from the releases, asks for
+your ISO or extracted folder (it checks it, and shows when it matches the Redump USA disc),
+and runs the same setup without a window: you tick the Microsoft Build Tools license there,
+and the first setup takes as long as the normal one. The game's page in the launcher has the
+display, resolution and VSync settings (the same `zoids_settings.cfg` as the launcher window
+below), and **Play** starts the game. After an update of the recomp, the first **Play**
+rebuilds the game (a small window shows the progress), then starts it.
+
+Everything goes into a `ZoidsAssaultRecomp` folder inside the launcher's folder for the game,
+with the same layout as a setup install. The setup does this with two options that only the
+launcher uses: `zoidssetup.exe --prepare --game <iso or folder> [--accept-msvc-license]`
+(prints `progress <0..1> <text>` lines) and `zoidssetup.exe --play [game options]`.
+Started from RecompLauncher, the game does not open its own launcher window (hold Shift to
+open it anyway).
 
 ## Launcher and options
 A small window before the game starts, shown on the first run, after each update,

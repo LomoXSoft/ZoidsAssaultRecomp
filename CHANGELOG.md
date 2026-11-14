@@ -2,6 +2,19 @@
 
 Newest first. Versions are in `app/VERSION`.
 
+## 0.0.4 – RecompLauncher support
+- `recomplauncher.json` and a `ZoidsAssaultRecomp-v0.0.4-Windows-x64.zip` release file:
+  RecompLauncher checks your ISO or extracted folder (with the Redump USA dump as the
+  known good copy), runs the setup without a window, shows the display, resolution and
+  VSync settings on the game's page, and starts the game.
+- Setup: `--prepare --game <iso or folder> [--accept-msvc-license]` installs without a
+  window and prints `progress` lines; `--play` starts the installed game and, after an
+  update of the recomp, rebuilds it first. Without these options the setup is unchanged.
+- Setup: the Redump dump of the USA disc is accepted as a verified ISO too.
+- Game: started from RecompLauncher (`RECOMPLAUNCHER=1`), it does not show its own
+  launcher window unless Shift is held or `--launcher` is given.
+- README: "Get it on RecompLauncher" badge.
+
 ## 0.0.3 – launcher and display settings
 - Launcher before the game starts (first run, after an update, Shift held, or
   `--launcher`): borderless / window / exclusive fullscreen, internal resolution
