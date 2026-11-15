@@ -4,6 +4,8 @@
 // so the log stays short. --zoids_save_log=false turns it off.
 #include "generated/default/zoidsassault_pch.h"
 
+#include "achievements.h"
+
 #include <cstring>
 #include <string>
 
@@ -77,6 +79,8 @@ extern "C" REX_FUNC(sub_82293428) {
   const std::string root_s = On() ? GuestString(base, root) : std::string();
   const std::string data_s = On() ? ContentData(base, data) : std::string();
   __imp__sub_82293428(ctx, base);
+  // Opening an existing save (XCONTENTFLAG_OPENEXISTING) is a load for Recomp Achievements.
+  if ((flags & 0xF) == 3) zoids::AchievementsSaveLoaded();
   if (On())
     REXLOG_INFO("zoids save: XamContentCreateEx(user={} root=\"{}\" {} flags={:X}) -> {:08X}", user, root_s, data_s,
                 flags, ctx.r3.u32);

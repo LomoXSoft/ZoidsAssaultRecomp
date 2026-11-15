@@ -11,6 +11,7 @@
 #include "frame_stats.h"
 #include "gpu_probe.h"
 #include "autotest.h"
+#include "achievements.h"
 
 #include <chrono>
 #include <mutex>
@@ -117,6 +118,8 @@ extern "C" REX_FUNC(sub_821092E0) {
   Count();
   zoids::GpuProbeFrameEnd();
   zoids::AutotestFrame();
+  zoids::AchievementsFrame();  // Recomp Achievements: launcher messages
+  zoids::AchievementsResearch(ctx, base, zoids::AutotestSwapCount());
   zoids::GpuProbeInSwap(true);
   __imp__sub_821092E0(ctx, base);
   zoids::GpuProbeInSwap(false);

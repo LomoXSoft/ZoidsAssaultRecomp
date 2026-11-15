@@ -170,6 +170,15 @@ launcher uses: `zoidssetup.exe --prepare --game <iso or folder> [--accept-msvc-l
 Started from RecompLauncher, the game does not open its own launcher window (hold Shift to
 open it anyway).
 
+### Recomp Achievements
+The game's own 8 Xbox 360 achievements work through ReXGlue, which keeps your unlocks in
+`Documents\zoidsassault\achievements\415407D1.toml` and shows its own toast. Started from
+RecompLauncher, the game also reports them to
+[Recomp Achievements](https://github.com/elripalda/RecompAchievements): the list with names
+and gamerscore, each unlock as it happens (the launcher then shows the toast), and when a save
+is loaded. Without RecompLauncher that library does nothing. `zoids.log` has a
+`zoids achievements:` line for each achievement the game writes.
+
 ## Launcher and options
 A small window before the game starts, shown on the first run, after each update,
 when **Shift** is held while the game starts, or with `--launcher`. **Quit** closes it
@@ -198,7 +207,10 @@ In the game, **F3** shows the frame rate. Options for bug reports and developmen
   per-game fixes in `src/hooks.cpp`, crash logger in `src/crash_diag.cpp`,
   launcher in `src/launcher.cpp`, game icon in `src/game_icon.cpp`, frame cap and
   F3 stats in `src/frame_stats.cpp`, save log in `src/save_diag.cpp`, frame-rate
-  research flags in `src/research.cpp`.
+  research flags in `src/research.cpp`, Recomp Achievements bridge in
+  `src/achievements.cpp`.
+- `app/third_party/rl_achievements/` – the Recomp Achievements library (its own license,
+  see below).
 - `tools/` – build/run scripts, `xiso_extract.py`, and the setup: `zoidssetup.cpp`
   (window), `install.ps1` (the steps it runs), `build_setup.bat` (builds the setup exe).
 - `tools/artwork/` – Lomorsin pixel art for the setup window (not game art). The game window and
@@ -216,7 +228,8 @@ In the game, **F3** shows the frame rate. Options for bug reports and developmen
 
 ## License and legal notice
 The code in this repository is licensed under the **GNU GPL v3.0** (see
-`LICENSE`).
+`LICENSE`), except `app/third_party/rl_achievements/`, the Recomp Achievements library,
+which keeps its own license (its `LICENSE`; rcheevos and cJSON inside it are MIT).
 
 This is a fan project, not affiliated with or endorsed by Takara Tomy, Atlus,
 Microsoft or any rights holder. "Zoids" and related names are trademarks of

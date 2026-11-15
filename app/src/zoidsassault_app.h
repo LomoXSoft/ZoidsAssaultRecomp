@@ -11,6 +11,9 @@
 #include <rex/logging/types.h>
 #include <rex/rex_app.h>
 
+#include <rex/ui/overlay/achievement_toast.h>
+
+#include "achievements.h"
 #include "frame_stats.h"
 #include "game_icon.h"
 #include "launcher.h"
@@ -39,7 +42,13 @@ class ZoidsAssaultApp : public rex::ReXApp {
   // The game's own icon, read from the loaded default.xex (game_icon.cpp).
   void OnPostLoadXexImage() override {
     zoids::ScanFrameConstants();  // research flag only
+    zoids::AchievementsInit();    // Recomp Achievements (does nothing outside RecompLauncher)
     zoids::CaptureGameIcon();   // quits here with --zoids_write_icon
+  }
+  // ReXGlue's unlock toast, hidden while RecompLauncher shows its own.
+  std::unique_ptr<rex::ui::AchievementNotificationDialog> CreateAchievementNotificationDialog() override {
+    if (!imgui_drawer()) return nullptr;
+    return std::make_unique<QuietableToast>(imgui_drawer(), immediate_drawer(), runtime());
   }
   void OnCreateDialogs(rex::ui::ImGuiDrawer* drawer) override {
     (void)drawer;
@@ -65,6 +74,15 @@ class ZoidsAssaultApp : public rex::ReXApp {
   }
 
  private:
+  class QuietableToast : public rex::ui::AchievementToastDialog {
+   public:
+    using rex::ui::AchievementToastDialog::AchievementToastDialog;
+    void Push(const rex::system::AchievementEvent& event) override {
+      if (zoids::AchievementsQuietToasts()) return;
+      rex::ui::AchievementToastDialog::Push(event);
+    }
+  };
+
   static std::filesystem::path SetupRoot() {
     return rex::filesystem::GetExecutableFolder().parent_path();
   }

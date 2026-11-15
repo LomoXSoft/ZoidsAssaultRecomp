@@ -10,6 +10,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(generated/rexglue.cmake)
 
+# Recomp Achievements (C library, third_party/rl_achievements).
+enable_language(C)
+add_subdirectory(third_party/rl_achievements EXCLUDE_FROM_ALL)
+
 # Sources
 set(ZOIDSASSAULT_SOURCES
     src/main.cpp
@@ -23,6 +27,7 @@ set(ZOIDSASSAULT_SOURCES
     src/gpu_probe.cpp
     src/autotest.cpp
     src/frame_interp.cpp
+    src/achievements.cpp
 )
 
 # Single version source: app/VERSION (bump per release).
@@ -37,6 +42,7 @@ endif()
 
 rexglue_setup_target(zoidsassault GPU_PLUGINS xenos)
 target_compile_definitions(zoidsassault PRIVATE ZOIDS_VERSION="${ZOIDS_VERSION}")
+target_link_libraries(zoidsassault PRIVATE rl_achievements)
 
 if(WIN32)
     # crash_diag.cpp: symbolized stack walk on an unhandled access violation.

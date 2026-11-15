@@ -2,6 +2,14 @@
 
 Newest first. Versions are in `app/VERSION`.
 
+## Unreleased
+- Recomp Achievements: started from RecompLauncher, the game reports its own 8 Xbox 360
+  achievements (the list with names and gamerscore, each unlock, earlier unlocks, and
+  save loads) and lets the launcher show the unlock toast. The library is in
+  `app/third_party/rl_achievements` and does nothing outside RecompLauncher.
+- `zoids.log` has a line for each achievement the game writes. Research:
+  `--zoids_test_achievement=<id>` unlocks one through the game's own routine.
+
 ## 0.1.0 – first milestone: the game works
 - The game boots, plays its cutscenes with sound, and plays from a new game to the
   end of the first mission with a controller; saving and loading work.
