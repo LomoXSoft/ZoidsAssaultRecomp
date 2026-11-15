@@ -9,6 +9,8 @@ Newest first. Versions are in `app/VERSION`.
   `app/third_party/rl_achievements` and does nothing outside RecompLauncher.
 - `zoids.log` has a line for each achievement the game writes. Research:
   `--zoids_test_achievement=<id>` unlocks one through the game's own routine.
+- License: `LICENSE-EXCEPTION` adds a GPL-3.0 section 7 permission to combine the
+  project with the Recomp Achievements library, which keeps its own license.
 
 ## 0.1.0 – first milestone: the game works
 - The game boots, plays its cutscenes with sound, and plays from a new game to the

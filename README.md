@@ -228,8 +228,9 @@ In the game, **F3** shows the frame rate. Options for bug reports and developmen
 
 ## License and legal notice
 The code in this repository is licensed under the **GNU GPL v3.0** (see
-`LICENSE`), except `app/third_party/rl_achievements/`, the Recomp Achievements library,
-which keeps its own license (its `LICENSE`; rcheevos and cJSON inside it are MIT).
+`LICENSE`), with an additional permission (`LICENSE-EXCEPTION`) to combine it with the
+Recomp Achievements library. That library, in `app/third_party/rl_achievements/`, keeps
+its own license (its `LICENSE`; rcheevos and cJSON inside it are MIT).
 
 This is a fan project, not affiliated with or endorsed by Takara Tomy, Atlus,
 Microsoft or any rights holder. "Zoids" and related names are trademarks of
