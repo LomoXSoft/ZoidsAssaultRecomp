@@ -10,7 +10,7 @@
 
 namespace zoidssetup {
 
-inline constexpr wchar_t kExpectedVersion[] = L"0.1.0";
+inline constexpr wchar_t kExpectedVersion[] = L"0.1.1";
 
 struct Request {
   std::wstring powershell_exe;

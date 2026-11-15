@@ -2,7 +2,7 @@
 
 Newest first. Versions are in `app/VERSION`.
 
-## Unreleased
+## 0.1.1 – Recomp Achievements
 - Recomp Achievements: started from RecompLauncher, the game reports its own 8 Xbox 360
   achievements (the list with names and gamerscore, each unlock, earlier unlocks, and
   save loads) and lets the launcher show the unlock toast. The library is in
